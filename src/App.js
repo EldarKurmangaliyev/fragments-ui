@@ -1,4 +1,4 @@
-import React,{ useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Amplify, Auth } from 'aws-amplify'; // Note the named import
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
@@ -18,10 +18,8 @@ Amplify.configure({
   },
 });
 
-function App() {
-
+function InnerApp({ onSignOut }) {
   const [userName, setUserName] = useState('');
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchUserAndFragments = async () => {
@@ -29,9 +27,6 @@ function App() {
         const user = await Auth.currentAuthenticatedUser();
         const { attributes } = user;
         setUserName(attributes.name);
-        setUser(user);
-
-        // Fetch user fragments after setting the user.
         getUserFragments(user);
       } catch (error) {
         console.error('Error fetching user', error);
@@ -41,10 +36,12 @@ function App() {
     fetchUserAndFragments();
   }, []);
 
+  
 
   const signOut = async () => {
     try {
       await Auth.signOut();
+      onSignOut();  // Calling the passed-in function to manage parent state
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -52,12 +49,39 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Hello, {userName || "here will be your name" }!</h1>
+      <h1>Hello, {userName || 'here will be your name'}!</h1>
       <button onClick={signOut}>Sign Out</button>
     </div>
   );
 }
 
-export default withAuthenticator(App,{
+const InnerAppWithAuth = withAuthenticator(InnerApp, {
   signUpAttributes: ['email', 'name'],
 });
+
+function App() {
+  const [showAuth, setShowAuth] = useState(false);
+
+  const handleSignOut = useCallback(() => {
+    setShowAuth(false);
+  }, []);
+
+  const handleLoginClick = () => {
+    setShowAuth(true);
+  };
+
+  return (
+    <div className="App">
+      {showAuth ? (
+        <InnerAppWithAuth onSignOut={handleSignOut} />
+      ) : (
+        <>
+          <h1>Please Log In to see your name</h1>
+          <button onClick={handleLoginClick}>Login</button>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default App;
