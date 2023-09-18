@@ -2,6 +2,7 @@ import React,{ useState, useEffect } from 'react';
 import { Amplify, Auth } from 'aws-amplify'; // Note the named import
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import { getUserFragments } from './api';
 
 Amplify.configure({
   Auth: {
@@ -23,26 +24,21 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndFragments = async () => {
       try {
         const user = await Auth.currentAuthenticatedUser();
         const { attributes } = user;
-        setUserName(attributes.name); 
+        setUserName(attributes.name);
+        setUser(user);
+
+        // Fetch user fragments after setting the user.
+        getUserFragments(user);
       } catch (error) {
         console.error('Error fetching user', error);
       }
     };
 
-    fetchUser();
-  }, []);
-
-  useEffect(() => {
-    Auth.currentAuthenticatedUser()
-      .then((user) => {
-        console.log(user); // Inspect this user object in Dev Tools
-        setUser(user);
-      })
-      .catch((err) => console.log(err));
+    fetchUserAndFragments();
   }, []);
 
 
