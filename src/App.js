@@ -1,87 +1,45 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Amplify, Auth } from 'aws-amplify'; // Note the named import
-import { withAuthenticator } from '@aws-amplify/ui-react';
-import '@aws-amplify/ui-react/styles.css';
-import { getUserFragments } from './api';
+// src/app.js
 
-Amplify.configure({
-  Auth: {
-    region: 'us-east-1',
-    userPoolId: process.env.REACT_APP_AWS_COGNITO_POOL_ID,
-    userPoolWebClientId: process.env.REACT_APP_AWS_COGNITO_CLIENT_ID,
-    oauth: {
-      domain: process.env.REACT_APP_AWS_COGNITO_HOSTED_UI_DOMAIN,
-      redirectSignIn: process.env.REACT_APP_OAUTH_SIGN_IN_REDIRECT_URL,
-      redirectSignOut: process.env.REACT_APP_OAUTH_SIGN_OUT_REDIRECT_URL,
-      responseType: 'code',
-    },
-  },
-});
+import { Auth, getUser } from './auth';
 
-function InnerApp({ onSignOut }) {
-  const [userName, setUserName] = useState('');
+async function init() {
+  // Get our UI elements
+  const userSection = document.querySelector('#user');
+  const loginBtn = document.querySelector('#login');
+  const logoutBtn = document.querySelector('#logout');
 
-  useEffect(() => {
-    const fetchUserAndFragments = async () => {
-      try {
-        const user = await Auth.currentAuthenticatedUser();
-        const { attributes } = user;
-        setUserName(attributes.name);
-        getUserFragments(user);
-      } catch (error) {
-        console.error('Error fetching user', error);
-      }
-    };
-
-    fetchUserAndFragments();
-  }, []);
-
-  
-
-  const signOut = async () => {
-    try {
-      await Auth.signOut();
-      onSignOut();  // Calling the passed-in function to manage parent state
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+  // Wire up event handlers to deal with login and logout.
+  loginBtn.onclick = () => {
+    // Sign-in via the Amazon Cognito Hosted UI (requires redirects), see:
+    // https://docs.amplify.aws/lib/auth/advanced/q/platform/js/#identity-pool-federation
+    Auth.federatedSignIn();
+  };
+  logoutBtn.onclick = () => {
+    // Sign-out of the Amazon Cognito Hosted UI (requires redirects), see:
+    // https://docs.amplify.aws/lib/auth/emailpassword/q/platform/js/#sign-out
+    Auth.signOut();
   };
 
-  return (
-    <div className="App">
-      <h1>Hello, {userName || 'here will be your name'}!</h1>
-      <button onClick={signOut}>Sign Out</button>
-    </div>
-  );
+  // See if we're signed in (i.e., we'll have a `user` object)
+  const user = await getUser();
+  if (!user) {
+    // Disable the Logout button
+    logoutBtn.disabled = true;
+    return;
+  }
+
+  // Log the user info for debugging purposes
+  console.log({ user });
+
+  // Update the UI to welcome the user
+  userSection.hidden = false;
+
+  // Show the user's username
+  userSection.querySelector('.username').innerText = user.username;
+
+  // Disable the Login button
+  loginBtn.disabled = true;
 }
 
-const InnerAppWithAuth = withAuthenticator(InnerApp, {
-  signUpAttributes: ['email', 'name'],
-});
-
-function App() {
-  const [showAuth, setShowAuth] = useState(false);
-
-  const handleSignOut = useCallback(() => {
-    setShowAuth(false);
-  }, []);
-
-  const handleLoginClick = () => {
-    setShowAuth(true);
-  };
-
-  return (
-    <div className="App">
-      {showAuth ? (
-        <InnerAppWithAuth onSignOut={handleSignOut} />
-      ) : (
-        <>
-          <h1>Please Log In to see your name</h1>
-          <button onClick={handleLoginClick}>Login</button>
-        </>
-      )}
-    </div>
-  );
-}
-
-export default App;
+// Wait for the DOM to be ready, then start the app
+addEventListener('DOMContentLoaded', init);
