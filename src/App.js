@@ -8,6 +8,10 @@ async function init() {
   const loginBtn = document.querySelector('#login');
   const logoutBtn = document.querySelector('#logout');
 
+  // Get references to the new UI elements
+  const fragmentText = document.querySelector('#fragmentText');
+  const createFragmentBtn = document.querySelector('#createFragment');
+
   // Wire up event handlers to deal with login and logout.
   loginBtn.onclick = () => {
     // Sign-in via the Amazon Cognito Hosted UI (requires redirects), see:
@@ -18,6 +22,43 @@ async function init() {
     // Sign-out of the Amazon Cognito Hosted UI (requires redirects), see:
     // https://docs.amplify.aws/lib/auth/emailpassword/q/platform/js/#sign-out
     Auth.signOut();
+  };
+
+  // Wire up the event handler for the "Create Fragment" button
+  createFragmentBtn.onclick = async () => {
+    const text = fragmentText.value.trim();
+    const cognitoUser = await Auth.currentAuthenticatedUser();
+    const idToken = cognitoUser.signInUserSession.idToken.jwtToken;
+  
+    if (text) {
+      try {
+        const response = await fetch(`${process.env.API_URL}/v1/fragments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            'Authorization': `Bearer ${idToken}`, // Include the Cognito token here
+          },
+          body: text,
+        });
+  
+        // Log the response in the console for debugging
+        console.log('Response:', response);
+  
+        if (response.status === 201) {
+          // Fragment created successfully
+          alert('Fragment created successfully');
+          // You can add more logic here, such as clearing the input field
+        } else {
+          // Handle other response statuses as needed
+          alert('Failed to create fragment');
+        }
+      } catch (error) {
+        console.error('Error creating fragment:', error);
+        alert('An error occurred while creating the fragment');
+      }
+    } else {
+      alert('Please enter fragment text');
+    }
   };
 
   // See if we're signed in (i.e., we'll have a `user` object)
