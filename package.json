@@ -18,13 +18,13 @@
     "aws-amplify": "^5.3.11",
     "aws-jwt-verify": "^4.0.0",
     "dotenv": "^16.3.1",
-    "eslint": "^8.53.0",
+    "parcel": "^2.10.2",
+    "parcel-bundler": "^1.12.5",
     "passport": "^0.6.0",
     "passport-http-bearer": "^1.0.1"
   },
   "devDependencies": {
     "buffer": "^6.0.3",
-    "parcel": "^2.9.3",
     "process": "^0.11.10",
     "punycode": "^1.4.1",
     "querystring-es3": "^0.2.1"
