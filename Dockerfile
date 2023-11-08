@@ -19,7 +19,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY .env ./
 
 RUN npm i
 
@@ -29,6 +28,8 @@ FROM node:16.17.0-alpine AS build
 
 WORKDIR /app
 
+
+COPY .env ./
 COPY --from=base /app/package*.json ./ 
 COPY --from=base /app/node_modules ./node_modules
 ENV OAUTH_SIGN_IN_REDIRECT_URL=http://localhost
