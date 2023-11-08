@@ -1,5 +1,5 @@
 
-FROM node:16.17.0-alpine AS base
+FROM node:19.5.0-alpine AS base
 
 
 # ------------------ ENVIRONMENT VARIABLES ------------------
@@ -23,7 +23,7 @@ COPY package*.json ./
 RUN NODE_ENV=development npm i
 
 
-FROM node:16.17.0-alpine AS build
+FROM node:19.5.0-alpine AS build
 
 
 WORKDIR /app
