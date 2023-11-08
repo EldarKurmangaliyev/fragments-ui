@@ -29,7 +29,7 @@ FROM node:14.19-alpine3.14@sha256:8c93166ecea91d8384d9f1768ceaca1cd8bc22c1eb1300
 WORKDIR /app
 
 
-COPY .env ./
+
 COPY --from=base /app/package*.json ./ 
 COPY --from=base /app/node_modules ./node_modules
 
