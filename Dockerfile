@@ -19,6 +19,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
+COPY .env ./
 
 RUN npm i
 
