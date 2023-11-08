@@ -31,7 +31,7 @@ WORKDIR /app
 
 
 COPY --from=base /app/package*.json ./ 
-COPY --from=base /app/node_modules ./node_modules
+
 ENV OAUTH_SIGN_IN_REDIRECT_URL=http://localhost
 ENV OAUTH_SIGN_OUT_REDIRECT_URL=http://localhost
 
