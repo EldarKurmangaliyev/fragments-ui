@@ -36,9 +36,9 @@ ENV OAUTH_SIGN_IN_REDIRECT_URL=http://localhost
 ENV OAUTH_SIGN_OUT_REDIRECT_URL=http://localhost
 
 COPY src ./src
-RUN npm install parcel
-RUN npm install parcel-bundler
-RUN npm run build
+
+
+RUN npm run build , npm install parcel-bundler@1.12.5 , npm install parcel@2.10.2
 
 
 FROM nginx:stable-alpine AS deploy
