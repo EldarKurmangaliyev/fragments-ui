@@ -27,7 +27,7 @@ FROM node:16.17.0-alpine AS build
 
 
 WORKDIR /app
-
+RUN npm install dotenv@16.3.1
 
 COPY .env ./
 COPY --from=base /app/package*.json ./ 
