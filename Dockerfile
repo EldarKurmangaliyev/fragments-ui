@@ -20,7 +20,7 @@ WORKDIR /app
 COPY package*.json ./
 
 
-RUN NODE_ENV=development npm i
+RUN npm i
 
 
 FROM node:19.5.0-alpine AS build
@@ -36,7 +36,7 @@ ENV OAUTH_SIGN_IN_REDIRECT_URL=http://localhost
 ENV OAUTH_SIGN_OUT_REDIRECT_URL=http://localhost
 
 COPY src ./src
-RUN npm install parcel@2.10.2 && npm install parcel-bundler@1.12.5 && npm run build
+RUN npm i npm run build
 
 
 
