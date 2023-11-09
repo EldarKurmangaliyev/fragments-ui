@@ -1,54 +1,41 @@
+# Stage 1: Build the application
+FROM node:16-alpine AS build
 
-FROM node:19.5.0-alpine AS base
-
-
-# ------------------ ENVIRONMENT VARIABLES ------------------
-
+# We default to use port 8080 in our service
 ENV PORT=80
 
-
+# Reduce npm spam when installing within Docker
+# https://docs.npmjs.com/cli/v8/using-npm/config#loglevel
 ENV NPM_CONFIG_LOGLEVEL=warn
 
+# Disable colour when run inside Docker
+# https://docs.npmjs.com/cli/v8/using-npm/config#color
 ENV NPM_CONFIG_COLOR=false
 
-#------------------------------------------------------------
-
 
 WORKDIR /app
 
+# Copy package.json and package-lock.json
+COPY .env ./
+COPY package.json package-lock.json ./
 
-COPY package*.json ./
+# Install dependencies
+RUN npm install
 
+# Copy the source code
+COPY . .
 
-RUN npm i
+# Build the application
+RUN npm run build
 
+# Stage 2: Create the production image with Nginx
+FROM nginx:alpine
 
-FROM node:19.5.0-alpine AS build
-
-
-WORKDIR /app
-
-
-
-COPY --from=base /app/package*.json ./ 
-
-ENV OAUTH_SIGN_IN_REDIRECT_URL=http://localhost
-ENV OAUTH_SIGN_OUT_REDIRECT_URL=http://localhost
-
-COPY src ./src
-RUN npm i && npm install parcel@2.10.2 && npm install parcel-bundler@1.12.5 && npm run build
-
-
-
-
-FROM nginx:stable-alpine AS deploy
-
-
-
+# Copy the built files from the previous stage
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY --from=build /app/.parcel-cache /usr/share/nginx/html
 
+# Copy Nginx configuration file
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-
+# Expose port 80
 EXPOSE 80
-
