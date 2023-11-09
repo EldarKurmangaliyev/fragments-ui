@@ -16,7 +16,7 @@ ENV NPM_CONFIG_COLOR=false
 WORKDIR /app
 
 # Copy package.json and package-lock.json
-COPY .env ./
+
 COPY package.json package-lock.json ./
 
 # Install dependencies
