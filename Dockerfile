@@ -26,7 +26,7 @@ RUN npm install
 COPY . .
 
 # Build the application
-RUN rm -rf .cache
+
 RUN npm run build
 
 # Stage 2: Create the production image with Nginx
